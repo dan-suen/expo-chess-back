@@ -5,7 +5,7 @@ const port = 5000;
 
 app.use(express.json());
 
-const stockfish = spawn('./stockfish-windows-x86-64-avx2.exe');
+const stockfish = spawn('./stockfish-ubuntu-x86-64-avx2');
 
 stockfish.stdin.write('uci\n');
 
@@ -24,5 +24,5 @@ app.post('/uci', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server running on https://gusty-knowledgeable-lobster.glitch.me/`);
+  console.log(`Server running on https://yummy-scratched-carp.glitch.me/`);
 });
