@@ -2,63 +2,80 @@ const express = require("express");
 const { spawn } = require("child_process");
 const app = express();
 const port = 5000;
+const { Chess } = require("chess.js");
+
+
 
 app.use(express.json());
 
 const stockfish = spawn("./assets/stockfish-ubuntu-x86-64-avx2");
+const chess = new Chess();
 
 let output = "";
-
-stockfish.stderr.on("data", (data) => {
-  console.error("Error from Stockfish:", data.toString());
-});
+let moves = [];
+let first = true;
 
 stockfish.stdout.on("data", (data) => {
-  output= "";
-  output += data.toString().slice(-5, -1);
-  console.log("Received from Stockfish:", data.toString());
-
-  if (data.toString().includes("readyok")) {
-    console.log("Stockfish is ready");
+  if (first){
+    first = !first;
+    return;
   }
+  let result = data.toString();
+  let end = result.slice(-5, -1)
 
-  if (data.toString().includes("bestmove")) {
-    console.log("Best move received, sending response.");
-    stockfish.stdout.removeAllListeners("data");
-    stockfish.stdin.end();
+  output = "";
+  if (result.includes("readyok")) {
+    return console.log("Stockfish is ready");
   }
+  output += end;
+  moves.push(end);
+  if (chess.moves({square : end.substring(0, 1)}).includes(end.substring(2))){
+    chess.move(end, { sloppy: true })
+  } else {
+    console.log("Move not accepted")
+  }
+  stockfish.stdout.write("");
+});
+stockfish.stdout.on("end", () => {
+  console.log(moves)
 });
 
 app.post("/uci", (req, res) => {
   const { command } = req.body;
-  output = "";
-  console.log("bye " + output)
   if (command === "Start") {
     stockfish.stdin.write("uci\n");
     stockfish.stdin.write("isready\n");
-    stockfish.stdin.write("position startpos\n");
   }
-  
+  if (command === "New") {
+    stockfish.stdin.write("ucinewgame\n");
+    stockfish.stdin.write("isready\n");
+    chess.reset();
+  }
   if (command === "End") {
-    stockfish.stdin.end();
+    stockfish.stdin.destroy();
   }
   if (command === "First") {
-    stockfish.stdin.write("go depth 1\n");
+    stockfish.stdin.write("go depth 5\n");
   }
-  if (typeof command === "array") {
-    stockfish.stdin.write(`moves ${command[0]}\n`);
-    stockfish.stdin.write("go depth 1\n");
+  if (typeof command === "object") {
+    if (chess.moves(command[0].substring(0, 1)).includes(command[0].substring(2))) {
+      moves.push(command[0]);
+      stockfish.stdin.write(`posi tion startpos moves ${moves.join(" ")}\n`);
+      stockfish.stdin.write("go depth 5\n");
+    } else {
+      output = "invalid move";
+    }
   }
   if (command === "Start") {
     res.send({ response: "Stockfish initialized." });
   } else {
-    setTimeout(() => {
-      res.send({ response: output });
-      output = "";
-    }, 100);
+    res.send({ response: output });
+    output = "";
   }
 });
 
 app.listen(port, () => {
   console.log(`Server running on https://expo-chess-back.onrender.com`);
 });
+
+
