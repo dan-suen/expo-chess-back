@@ -10,15 +10,15 @@ let moves = [];
 
 const chessData = {
   boardState: chess.board(),
-  gameOver: chess.game_over(),
+  gameOver: chess.isGameOver(), // FIX: `isGameOver()` instead of `game_over()`
   history: chess.history({ verbose: true }),
-  check: chess.in_check(),
-  checkmate: chess.in_checkmate(),
-  draw: chess.in_draw(),
-  stalement: chess.in_stalemate(),
-  threepeat: chess.in_threefold_repetition(),
-  material: chess.insufficient_material(),
-}
+  check: chess.isCheck(), // FIX: `isCheck()` instead of `in_check()`
+  checkmate: chess.isCheckmate(), // FIX: `isCheckmate()` instead of `in_checkmate()`
+  draw: chess.isDraw(), // FIX: `isDraw()` instead of `in_draw()`
+  stalemate: chess.isStalemate(), // FIX: `isStalemate()` instead of `in_stalemate()`
+  threepeat: chess.isThreefoldRepetition(), // FIX: `isThreefoldRepetition()`
+  material: chess.isInsufficientMaterial(), // FIX: `isInsufficientMaterial()`
+};
 let stockfish;
 function startStockfish() {
   stockfish = spawn("./assets/stockfish-ubuntu-x86-64-avx2");

@@ -8,6 +8,8 @@ async def send_command(command):
         async with session.post(STOCKFISH_SERVER_URL, json={"command": command}) as response:
             result = await response.json()  
             print("result: " + result["response"])
+            if (command != "New" or command != "End"):
+                print(result)
             return command, result  
 async def main():
     await send_command("New")
