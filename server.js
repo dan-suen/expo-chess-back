@@ -10,14 +10,14 @@ let moves = [];
 
 const chessData = {
   boardState: chess.board(),
-  gameOver: chess.isGameOver(), // FIX: `isGameOver()` instead of `game_over()`
+  gameOver: chess.isGameOver(), 
   history: chess.history({ verbose: true }),
-  check: chess.isCheck(), // FIX: `isCheck()` instead of `in_check()`
-  checkmate: chess.isCheckmate(), // FIX: `isCheckmate()` instead of `in_checkmate()`
-  draw: chess.isDraw(), // FIX: `isDraw()` instead of `in_draw()`
-  stalemate: chess.isStalemate(), // FIX: `isStalemate()` instead of `in_stalemate()`
-  threepeat: chess.isThreefoldRepetition(), // FIX: `isThreefoldRepetition()`
-  material: chess.isInsufficientMaterial(), // FIX: `isInsufficientMaterial()`
+  check: chess.isCheck(), 
+  checkmate: chess.isCheckmate(), 
+  draw: chess.isDraw(), 
+  stalemate: chess.isStalemate(),
+  threepeat: chess.isThreefoldRepetition(), 
+  material: chess.isInsufficientMaterial(), 
 };
 let stockfish;
 function startStockfish() {
