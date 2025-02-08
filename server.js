@@ -8,6 +8,17 @@ app.use(express.json());
 const chess = new Chess();
 let moves = [];
 
+const chessData = {
+  boardState: chess.board(),
+  gameOver: chess.game_over(),
+  history: chess.history({ verbose: true }),
+  check: chess.in_check(),
+  checkmate: chess.in_checkmate(),
+  draw: chess.in_draw(),
+  stalement: chess.in_stalemate(),
+  threepeat: chess.in_threefold_repetition(),
+  material: chess.insufficient_material(),
+}
 let stockfish;
 function startStockfish() {
   stockfish = spawn("./assets/stockfish-ubuntu-x86-64-avx2");
@@ -44,11 +55,11 @@ app.post("/uci", async (req, res) => {
           // if (end === "e7e5"){
           //   console.log(result)
           // }
-          console.log(chess.ascii())
-          console.log(chess.turn())
-          console.log("possible:", end.substring(0, 2))
-          console.log("possible:", chess.moves({ square: end.substring(0, 2)}))
-          console.log("secondhalf", end.substring(2))
+          // console.log(chess.ascii())
+          // console.log(chess.turn())
+          // console.log("possible:", end.substring(0, 2))
+          // console.log("possible:", chess.moves({ square: end.substring(0, 2)}))
+          // console.log("secondhalf", end.substring(2))
           if (chess.moves({ square: end.substring(0, 2)}).includes(end.substring(2))) {
             try {
               chess.move(end, { sloppy: true });
@@ -115,7 +126,7 @@ app.post("/uci", async (req, res) => {
     }
     await waitForStockfishResponse();
     //console.log("closer")
-    return res.send({ response: moves[moves.length-1] });
+    return res.send({ response: moves[moves.length-1], ...chessData });
   } catch (err) {
     console.error(err);
     return res.status(500).send({ response: "An error occurred" });
