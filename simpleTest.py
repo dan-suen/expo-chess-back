@@ -10,10 +10,10 @@ async def send_command(command):
             print("result: " + result["response"])
             return command, result  
 async def main():
-    await send_command("Start")
+    await send_command("New")
     await send_command("First")
     await send_command("End")
-    await send_command("Start")
+    await send_command("New")
     await send_command(["e2e4"])
     await send_command("End")
     await send_command(["e2e4"])

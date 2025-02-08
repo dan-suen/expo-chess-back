@@ -15,71 +15,63 @@ function startStockfish() {
 if (!stockfish){
   startStockfish();
 }
-
+stockfish.stdin.write("uci\n");
+  stockfish.stdin.write("isready\n");
 
 
 let counter = 0;
 app.post("/uci", async (req, res) => {
   const { command } = req.body;
+  
   function waitForStockfishResponse() {
     return new Promise((resolve, reject) => {
       let result = '';
-      let first = true;
       let bestMoveFound = false;
-      const onData = (data) => {
-        if (first) {
-          first = false;
-          return;
-        }
-      }
       stockfish.stdout.on("data", (data) => {
         //console.log("hit this")
-        
-        counter++
-        console.log(counter);
-        result += data.toString();
-        //console.log(result)
+        // console.log(stockfish.stdout)
+        // counter++
+        // console.log(counter);
+        result = data.toString();
+        console.log(result)
         //counter ++;
         //console.log(`${counter} ${!bestMoveFound} ${result.includes("bestmove")}`);
+        
         if (!bestMoveFound && result.includes("bestmove")) {
           let index = result.indexOf("bestmove");
           let end = result.slice(index+9, index+13)
           bestMoveFound = true;
-          // console.log(chess.ascii())
-          // console.log(chess.turn())
-          // console.log("possible:" ,chess.moves({ square: end.substring(0, 2)}))
-          // console.log("secondhalf", end.substring(2))
+          // if (end === "e7e5"){
+          //   console.log(result)
+          // }
+          console.log(chess.ascii())
+          console.log(chess.turn())
+          console.log("possible:", end.substring(0, 2))
+          console.log("possible:", chess.moves({ square: end.substring(0, 2)}))
+          console.log("secondhalf", end.substring(2))
           if (chess.moves({ square: end.substring(0, 2)}).includes(end.substring(2))) {
             try {
               chess.move(end, { sloppy: true });
               moves.push(end);
-              stockfish.stdout.removeListener("data", onData);
               resolve(); 
             } catch (error) {
-              stockfish.stdout.removeListener("data", onData);
               reject("Move not accepted 1 ");
             }
           } else {
-            stockfish.stdout.removeListener("data", onData);
             reject("Move not accepted 2");
           }
         }
       });
-      stockfish.stdout.on("data", onData);
     });
   }
   try {
     if (command === "End") {
+      //console.log("here")
       stockfish.stdin.write("stop\n");
       moves = []
       chess.reset()
+      stockfish.stdout.removeAllListeners('data');
       return res.send({ response: "Connection terminated" });
-    }
-
-    if (command === "Start") {
-      stockfish.stdin.write("uci\n");
-      stockfish.stdin.write("isready\n");
-      return res.send({ response: "Stockfish initialized." });
     }
 
     if (command === "New") {
@@ -87,10 +79,12 @@ app.post("/uci", async (req, res) => {
       stockfish.stdin.write("isready\n");
       moves = []
       chess.reset();
+      stockfish.stdout.removeAllListeners('data');
       return res.send({ response: "Stockfish reset." });
     }
 
     if (command === "First") {
+      stockfish.stdin.write("position startpos\n");
       stockfish.stdin.write("go depth 5\n");
     }
 
