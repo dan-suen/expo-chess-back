@@ -11,11 +11,6 @@ const corsOptions = {
   allowedHeaders: "Content-Type, Authorization",
 };
 app.use(cors(corsOptions));
-app.use(
-  cors({
-    origin: "https://expo-chess-back.onrender.com/",
-  })
-);
 
 app.use(express.json());
 const chess = new Chess();
