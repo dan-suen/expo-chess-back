@@ -67,6 +67,8 @@ app.post("/uci", async (req, res) => {
           // console.log("possible:", end.substring(0, 2))
           // console.log("possible:", chess.moves({ square: end.substring(0, 2)}))
           // console.log("secondhalf", end.substring(2))
+
+
           if (
             chess
               .moves({ square: end.substring(0, 2) })
@@ -87,6 +89,7 @@ app.post("/uci", async (req, res) => {
     });
   }
   try {
+    //console.log("byer")
     if (command === "End") {
       //console.log("here")
       stockfish.stdin.write("stop\n");
@@ -94,33 +97,37 @@ app.post("/uci", async (req, res) => {
       chess.reset();
       stockfish.stdout.removeAllListeners("data");
       return res.send({ response: "Connection terminated" });
-    } else if (command === "New") {
+    } 
+    if (command === "New") {
       stockfish.stdin.write("ucinewgame\n");
       stockfish.stdin.write("isready\n");
       moves = [];
       chess.reset();
       stockfish.stdout.removeAllListeners("data");
       return res.send({ response: "Stockfish reset." });
-    } else if (command === "First") {
+    } 
+    if (command === "First") {
       stockfish.stdin.write("position startpos\n");
       stockfish.stdin.write("go depth 5\n");
     }
     // console.log(command[0].substring(0, 2))
     // console.log(moves)
-    // console.log(chess.moves({square: command[0].substring(0, 2)}))
-    // console.log(command[0].substring(2))
+    console.log(command)
+    console.log(chess.moves({square: command.substring(0, 2)}))
+    console.log(command.substring(2))
     // console.log(chess.ascii())
     // console.log(chess.history({verbose:true}))
     // console.log(chess.turn())
     // console.log(chess.get(command[0].substring(0, 2)))
-    else if (
+    if (
       chess
-        .moves({ square: command[0].substring(0, 2) })
-        .includes(command[0].substring(2))
+      .moves({ square: command.substring(0, 2) })
+      .includes(command.substring(2))
     ) {
+      console.log("hello")
       try {
-        chess.move(command[0], { sloppy: true });
-        moves.push(command[0]);
+        chess.move(command, { sloppy: true });
+        moves.push(command);
         //console.log("try: ", moves)
         stockfish.stdin.write(`position startpos moves ${moves.join(" ")}\n`);
         stockfish.stdin.write("go depth 5\n");
