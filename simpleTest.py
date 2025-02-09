@@ -1,7 +1,7 @@
 import aiohttp
 import asyncio
 
-STOCKFISH_SERVER_URL = "http://localhost:5000/uci"
+STOCKFISH_SERVER_URL = "https://expo-chess-back.onrender.com/uci"
 
 async def send_command(command):
     async with aiohttp.ClientSession() as session:
