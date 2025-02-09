@@ -5,7 +5,12 @@ const port = 5000;
 const cors = require('cors');
 const { Chess } = require("chess.js");
 
-app.use(cors());
+const corsOptions = {
+  origin: "*", // Allows all origins (for mobile app access)
+  methods: "POST",
+  allowedHeaders: "Content-Type, Authorization",
+};
+app.use(cors(corsOptions));
 app.use(
   cors({
     origin: "https://expo-chess-back.onrender.com/", // Replace with the URL of your frontend
