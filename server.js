@@ -4,6 +4,12 @@ const app = express();
 const port = 5000;
 const { Chess } = require("chess.js");
 
+
+app.use(cors());
+app.use(cors({
+  origin: 'https://expo-chess-back.onrender.com/', // Replace with the URL of your frontend
+}));
+
 app.use(express.json());
 const chess = new Chess();
 let moves = [];
