@@ -2,13 +2,15 @@ const express = require("express");
 const { spawn } = require("child_process");
 const app = express();
 const port = 5000;
+const cors = require('cors');
 const { Chess } = require("chess.js");
 
-
 app.use(cors());
-app.use(cors({
-  origin: 'https://expo-chess-back.onrender.com/', // Replace with the URL of your frontend
-}));
+app.use(
+  cors({
+    origin: "https://expo-chess-back.onrender.com/", // Replace with the URL of your frontend
+  })
+);
 
 app.use(express.json());
 const chess = new Chess();
@@ -16,33 +18,32 @@ let moves = [];
 
 const chessData = {
   boardState: chess.board(),
-  gameOver: chess.isGameOver(), 
+  gameOver: chess.isGameOver(),
   history: chess.history({ verbose: true }),
-  check: chess.isCheck(), 
-  checkmate: chess.isCheckmate(), 
-  draw: chess.isDraw(), 
+  check: chess.isCheck(),
+  checkmate: chess.isCheckmate(),
+  draw: chess.isDraw(),
   stalemate: chess.isStalemate(),
-  threepeat: chess.isThreefoldRepetition(), 
-  material: chess.isInsufficientMaterial(), 
+  threepeat: chess.isThreefoldRepetition(),
+  material: chess.isInsufficientMaterial(),
 };
 let stockfish;
 function startStockfish() {
   stockfish = spawn("./assets/stockfish-ubuntu-x86-64-avx2");
 }
-if (!stockfish){
+if (!stockfish) {
   startStockfish();
 }
-stockfish.stdin.write("uci\n");
-  stockfish.stdin.write("isready\n");
-
 
 let counter = 0;
 app.post("/uci", async (req, res) => {
   const { command } = req.body;
   
+  stockfish.stdin.write("uci\n");
+  stockfish.stdin.write("isready\n");
   function waitForStockfishResponse() {
     return new Promise((resolve, reject) => {
-      let result = '';
+      let result = "";
       let bestMoveFound = false;
       stockfish.stdout.on("data", (data) => {
         //console.log("hit this")
@@ -50,13 +51,13 @@ app.post("/uci", async (req, res) => {
         // counter++
         // console.log(counter);
         result = data.toString();
-        console.log(result)
+        console.log(result);
         //counter ++;
         //console.log(`${counter} ${!bestMoveFound} ${result.includes("bestmove")}`);
-        
+
         if (!bestMoveFound && result.includes("bestmove")) {
           let index = result.indexOf("bestmove");
-          let end = result.slice(index+9, index+13)
+          let end = result.slice(index + 9, index + 13);
           bestMoveFound = true;
           // if (end === "e7e5"){
           //   console.log(result)
@@ -66,11 +67,15 @@ app.post("/uci", async (req, res) => {
           // console.log("possible:", end.substring(0, 2))
           // console.log("possible:", chess.moves({ square: end.substring(0, 2)}))
           // console.log("secondhalf", end.substring(2))
-          if (chess.moves({ square: end.substring(0, 2)}).includes(end.substring(2))) {
+          if (
+            chess
+              .moves({ square: end.substring(0, 2) })
+              .includes(end.substring(2))
+          ) {
             try {
               chess.move(end, { sloppy: true });
               moves.push(end);
-              resolve(); 
+              resolve();
             } catch (error) {
               reject("Move not accepted 1 ");
             }
@@ -85,18 +90,18 @@ app.post("/uci", async (req, res) => {
     if (command === "End") {
       //console.log("here")
       stockfish.stdin.write("stop\n");
-      moves = []
-      chess.reset()
-      stockfish.stdout.removeAllListeners('data');
+      moves = [];
+      chess.reset();
+      stockfish.stdout.removeAllListeners("data");
       return res.send({ response: "Connection terminated" });
     }
 
     if (command === "New") {
       stockfish.stdin.write("ucinewgame\n");
       stockfish.stdin.write("isready\n");
-      moves = []
+      moves = [];
       chess.reset();
-      stockfish.stdout.removeAllListeners('data');
+      stockfish.stdout.removeAllListeners("data");
       return res.send({ response: "Stockfish reset." });
     }
 
@@ -115,7 +120,9 @@ app.post("/uci", async (req, res) => {
       // console.log(chess.turn())
       // console.log(chess.get(command[0].substring(0, 2)))
       if (
-        chess.moves({square: command[0].substring(0, 2)}).includes(command[0].substring(2))
+        chess
+          .moves({ square: command[0].substring(0, 2) })
+          .includes(command[0].substring(2))
       ) {
         try {
           chess.move(command[0], { sloppy: true });
@@ -132,13 +139,12 @@ app.post("/uci", async (req, res) => {
     }
     await waitForStockfishResponse();
     //console.log("closer")
-    return res.send({ response: moves[moves.length-1], ...chessData });
+    return res.send({ response: moves[moves.length - 1], ...chessData });
   } catch (err) {
     console.error(err);
     return res.status(500).send({ response: "An error occurred" });
   }
 });
-
 
 app.listen(port, () => {
   console.log(`Server running on https://expo-chess-back.onrender.com`);
