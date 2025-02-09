@@ -16,17 +16,17 @@ app.use(express.json());
 const chess = new Chess();
 let moves = [];
 
-const chessData = {
-  boardState: chess.board(),
-  gameOver: chess.isGameOver(),
-  history: chess.history({ verbose: true }),
-  check: chess.isCheck(),
-  checkmate: chess.isCheckmate(),
-  draw: chess.isDraw(),
-  stalemate: chess.isStalemate(),
-  threepeat: chess.isThreefoldRepetition(),
-  material: chess.isInsufficientMaterial(),
-};
+// const chessData = {
+//   boardState: chess.board(),
+//   gameOver: chess.isGameOver(),
+//   history: chess.history({ verbose: true }),
+//   check: chess.isCheck(),
+//   checkmate: chess.isCheckmate(),
+//   draw: chess.isDraw(),
+//   stalemate: chess.isStalemate(),
+//   threepeat: chess.isThreefoldRepetition(),
+//   material: chess.isInsufficientMaterial(),
+// };
 let stockfish;
 function startStockfish() {
   stockfish = spawn("./assets/stockfish-ubuntu-x86-64-avx2");
@@ -87,6 +87,12 @@ app.post("/uci", async (req, res) => {
     });
   }
   try {
+    if (command === "Kill") {
+      //console.log("here")
+      stockfish.kill();
+      stockfish = null;
+      return res.send({ response: "Killing Instance" });
+    }
     if (command === "End") {
       //console.log("here")
       stockfish.stdin.write("stop\n");
@@ -139,7 +145,7 @@ app.post("/uci", async (req, res) => {
     }
     await waitForStockfishResponse();
     //console.log("closer")
-    return res.send({ response: moves[moves.length - 1], ...chessData });
+    return res.send({ response: moves[moves.length - 1]});
   } catch (err) {
     console.error(err);
     return res.status(500).send({ response: "An error occurred" });
