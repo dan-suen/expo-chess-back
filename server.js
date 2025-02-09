@@ -6,14 +6,14 @@ const cors = require('cors');
 const { Chess } = require("chess.js");
 
 const corsOptions = {
-  origin: "*", // Allows all origins (for mobile app access)
+  origin: "*",
   methods: "POST",
   allowedHeaders: "Content-Type, Authorization",
 };
 app.use(cors(corsOptions));
 app.use(
   cors({
-    origin: "https://expo-chess-back.onrender.com/", // Replace with the URL of your frontend
+    origin: "https://expo-chess-back.onrender.com/",
   })
 );
 
