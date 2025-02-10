@@ -14,7 +14,6 @@ app.use(cors(corsOptions));
 
 app.use(express.json());
 const chess = new Chess();
-let moves = [];
 
 // const chessData = {
 //   boardState: chess.board(),
@@ -38,7 +37,6 @@ if (!stockfish) {
 let counter = 0;
 app.post("/uci", async (req, res) => {
   const { command } = req.body;
-
   stockfish.stdin.write("uci\n");
   stockfish.stdin.write("isready\n");
   function waitForStockfishResponse() {
@@ -46,12 +44,13 @@ app.post("/uci", async (req, res) => {
       let result = "";
       let bestMoveFound = false;
       stockfish.stdout.on("data", (data) => {
+        //console.log("no ")
         //console.log("hit this")
         // console.log(stockfish.stdout)
         // counter++
         // console.log(counter);
         result = data.toString();
-        console.log(result);
+        //console.log(result);
         //counter ++;
         //console.log(`${counter} ${!bestMoveFound} ${result.includes("bestmove")}`);
 
@@ -67,16 +66,20 @@ app.post("/uci", async (req, res) => {
           // console.log("possible:", end.substring(0, 2))
           // console.log("possible:", chess.moves({ square: end.substring(0, 2)}))
           // console.log("secondhalf", end.substring(2))
-
-
+          const startSquare = end.substring(0, 2); 
+          const targetSquare = end.substring(2);  
+          
+       
+          const moves = chess.moves({ square: startSquare });
+          
+          
+          const validMove = moves.some(move => move.slice(-2) === targetSquare);
           if (
-            chess
-              .moves({ square: end.substring(0, 2) })
-              .includes(end.substring(2))
+            validMove
           ) {
             try {
               chess.move(end, { sloppy: true });
-              moves.push(end);
+              console.log(end)
               resolve();
             } catch (error) {
               reject("Move not accepted 1 ");
@@ -93,7 +96,6 @@ app.post("/uci", async (req, res) => {
     if (command === "End") {
       //console.log("here")
       stockfish.stdin.write("stop\n");
-      moves = [];
       chess.reset();
       stockfish.stdout.removeAllListeners("data");
       return res.send({ response: "Connection terminated" });
@@ -101,9 +103,7 @@ app.post("/uci", async (req, res) => {
     if (command === "New") {
       stockfish.stdin.write("ucinewgame\n");
       stockfish.stdin.write("isready\n");
-      moves = [];
       chess.reset();
-      stockfish.stdout.removeAllListeners("data");
       return res.send({ response: "Stockfish reset." });
     } 
     if (command === "First") {
@@ -112,9 +112,9 @@ app.post("/uci", async (req, res) => {
     }
     // console.log(command[0].substring(0, 2))
     // console.log(moves)
-    console.log(command)
-    console.log(chess.moves({square: command.substring(0, 2)}))
-    console.log(command.substring(2))
+    // console.log(command)
+    // console.log(chess.moves({square: command.substring(0, 2)}))
+    // console.log(command.substring(2))
     // console.log(chess.ascii())
     // console.log(chess.history({verbose:true}))
     // console.log(chess.turn())
@@ -124,12 +124,10 @@ app.post("/uci", async (req, res) => {
       .moves({ square: command.substring(0, 2) })
       .includes(command.substring(2))
     ) {
-      console.log("hello")
       try {
         chess.move(command, { sloppy: true });
-        moves.push(command);
-        //console.log("try: ", moves)
-        stockfish.stdin.write(`position startpos moves ${moves.join(" ")}\n`);
+        //console.log("outer")
+        stockfish.stdin.write(`position fen ${chess.fen()}\n`);
         stockfish.stdin.write("go depth 5\n");
       } catch {
         return res.status(400).send({ response: "Invalid move" });
@@ -139,7 +137,8 @@ app.post("/uci", async (req, res) => {
     }
     await waitForStockfishResponse();
     //console.log("closer")
-    return res.send({ response: moves[moves.length - 1] });
+    const lastmove = chess.history({ verbose: true })[chess.history().length-1]
+    return res.send({ response: `${lastmove.from}${lastmove.to}`});
   } catch (err) {
     console.error(err);
     return res.status(500).send({ response: "An error occurred" });
