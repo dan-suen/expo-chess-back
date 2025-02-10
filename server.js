@@ -37,13 +37,17 @@ if (!stockfish) {
 let counter = 0;
 app.post("/uci", async (req, res) => {
   const { command } = req.body;
+  if(command === "f2f4"){
+    console.log(chess.ascii())
+  }
   stockfish.stdin.write("uci\n");
   stockfish.stdin.write("isready\n");
   function waitForStockfishResponse() {
     return new Promise((resolve, reject) => {
       let result = "";
       let bestMoveFound = false;
-      stockfish.stdout.on("data", (data) => {
+      const dataListener = (data) => {
+
         //console.log("no ")
         //console.log("hit this")
         // console.log(stockfish.stdout)
@@ -57,8 +61,22 @@ app.post("/uci", async (req, res) => {
         if (!bestMoveFound && result.includes("bestmove")) {
           let index = result.indexOf("bestmove");
           let end = result.slice(index + 9, index + 13);
+          // if (end === "none") {
+          //   /////
+
+
+
+
+
+
+
+
+
+
+          // }
           bestMoveFound = true;
-          // if (end === "e1g1"){
+          // console.log(end)
+          // if (end === "d4e2"){
           //   console.log("possible:", end.substring(0, 2))
           //   console.log("possible:", chess.moves({ square: end.substring(0, 2)}))
           //   console.log("secondhalf", end.substring(2))
@@ -76,7 +94,8 @@ app.post("/uci", async (req, res) => {
           if (moves.includes("O-O") || moves.includes("O-O-O")){
             validMove = "castling"
           } else {
-            validMove = moves.some(move => move.slice(-2) === targetSquare);
+            validMove = moves.some(move => move.includes(targetSquare));
+            //console.log(validMove)
           }
           if (
             validMove
@@ -84,17 +103,21 @@ app.post("/uci", async (req, res) => {
             try {
               //console.log("trying castling: ", moves)
               chess.move(end, { sloppy: true });
-              console.log(chess.history())
+              //console.log(chess.history())
               // console.log(end)
+              stockfish.stdout.removeListener("data", dataListener);
               resolve();
             } catch (error) {
+              stockfish.stdout.removeListener("data", dataListener);
               reject("Move not accepted 1 ");
             }
           } else {
+            stockfish.stdout.removeListener("data", dataListener);
             reject("Move not accepted 2");
           }
         }
-      });
+      };
+      stockfish.stdout.on("data", dataListener);
     });
   }
   try {
@@ -114,7 +137,7 @@ app.post("/uci", async (req, res) => {
     } 
 
 
-    // if(command === 'd7d6'){
+    // if(command === 'c4e2'){
     //     console.log(chess.history())
     //     console.log(command)
     //     console.log(chess.ascii())
