@@ -159,7 +159,11 @@ app.post("/uci", async (req, res) => {
       try {
         //console.log("this is fen: " + chess.fen())
         // console.log(command)
-        chess.move(command, { sloppy: true });
+        if(command.length === 5){
+          chess.move({ from: command.substring(0,2), to: command.substring(2,4), promotion: command[4] })
+        } else {
+          chess.move(command, { sloppy: true });
+        }
         //console.log("outer")
         stockfish.stdin.write(`position fen ${chess.fen()}\n`);
         stockfish.stdin.write("go depth 5\n");
