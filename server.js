@@ -37,6 +37,11 @@ if (!stockfish) {
 let counter = 0;
 app.post("/uci", async (req, res) => {
   const { command } = req.body;
+  if (chess.isGameOver()){
+    stockfish.stdin.write("stop\n");
+    stockfish.stdout.removeAllListeners("data");
+    return res.send({ response: "Game Already Over"});
+  }
   // if(command === "f2f4"){
   //   console.log(chess.ascii())
   // }
@@ -61,19 +66,6 @@ app.post("/uci", async (req, res) => {
         if (!bestMoveFound && result.includes("bestmove")) {
           let index = result.indexOf("bestmove");
           let end = result.slice(index + 9, index + 13);
-          // if (end === "none") {
-          //   /////
-
-
-
-
-
-
-
-
-
-
-          // }
           bestMoveFound = true;
           // console.log(end)
           // if (end === "d4e2"){
@@ -124,7 +116,7 @@ app.post("/uci", async (req, res) => {
     if (command === "End") {
       //console.log("here")
       stockfish.stdin.write("stop\n");
-      console.log(chess.history())
+      //console.log(chess.history())
       chess.reset();
       stockfish.stdout.removeAllListeners("data");
       return res.send({ response: "Connection terminated" });
