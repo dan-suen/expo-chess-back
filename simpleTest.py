@@ -7,52 +7,65 @@ file_path = 'simpleTest2.py'
 async def send_command(command, append = False):
     async with aiohttp.ClientSession() as session:
         async with session.post(STOCKFISH_SERVER_URL, json={"command": command}) as response:
-            result = await response.json()  
-            if (result["response"] == "none"):
+            result = await response.json()
+            if (command == "New"):
+                print("Write a command for the first move!")
+                return
+            elif (command == "End"):
+                print("Termination Signal Sent")  
+                return
+            elif (result["response"] == "none"):
                 return print("No more moves!")
             else:    
-                append_to_second_last_line(file_path, result["response"], append)
-            print(command)
-            print(result)
+                append_to_second_last_line(file_path, result["response"], command, append)
+            # print(command)
+            # print(result)
             return
-def append_to_second_last_line(file_path, command, append = False):
+def append_to_second_last_line(file_path, response, command, append = False, ):
     # return
     if append:
         with open(file_path, 'r') as file:
-            #croppedcontent = f'    await send_command("d7e5")\n' #initial
-            croppedcontent = f'    await send_command("d7e5")\n'
             lines = file.readlines()
-            prev = croppedcontent[24:-3]
-            print(prev)
-            print(command)
-            lines[-3] = croppedcontent
-            lines.insert(-2, f'    await send_command("{command}", append = True)\n')
-            lines[23] = f"            croppedcontent = f'    await send_command(\"{command}\")\\n'\n"
+            current = "" if command == "First" else lines[-3][24:-18]
+            print(current)
+            print(response)
+            if(current == response):
+                print("Line is already there")
+                return
+            croppedcontent = f'    await send_command("{current}")\n'
+            print(croppedcontent)
+            lines[-3] = croppedcontent if current else ""
+            lines.insert(-2, f'    await send_command("{response}", append = True)\n')
             with open(file_path, 'w') as file:
                 file.writelines(lines)
 async def main():
-    await send_command("New")
+    await send_command("New") #Do not remove
+    # await send_command("First", append = True) #Uncomment and call to start move generation
+    # await send_command("First")
+    # await send_command("e7e5")
+    # await send_command("b8c6")
+    # await send_command("d7d6")
+    # await send_command("c8g4")
+    # await send_command("c6d4")
+    # await send_command("d4e2")
+    # await send_command("g8f6")
+    # await send_command("g4f3")
+    # await send_command("e5d4")
+    # await send_command("f6d7")
+    # await send_command("f8e7")
+    # await send_command("e7f6")
+    # await send_command("f6e5")
+    # await send_command("d8h4")
+    # await send_command("c7c5")
+    # await send_command("e8g8")
+    # await send_command("c5d4")
+    # await send_command("b7b5")
+    # await send_command("d4d3")
+    # await send_command("e5c3")
+    # await send_command("d7e5")
+    # await send_command("a8c8")
+    # await send_command("e5g6", append = True)
     await send_command("First")
-    await send_command("e7e5")
-    await send_command("b8c6")
-    await send_command("d7d6")
-    await send_command("c8g4")
-    await send_command("c6d4")
-    await send_command("d4e2")
-    await send_command("g8f6")
-    await send_command("g4f3")
-    await send_command("e5d4")
-    await send_command("f6d7")
-    await send_command("f8e7")
-    await send_command("e7f6")
-    await send_command("f6e5")
-    await send_command("d8h4")
-    await send_command("c7c5")
-    await send_command("e8g8")
-    await send_command("c5d4")
-    await send_command("b7b5")
-    await send_command("d4d3")
-    await send_command("e5c3")
-    await send_command("d7e5", append = True)
-    await send_command("End")
+    await send_command("e7e5", append = True)
+    await send_command("End") #Do not remove
 asyncio.run(main())
