@@ -58,28 +58,34 @@ app.post("/uci", async (req, res) => {
           let index = result.indexOf("bestmove");
           let end = result.slice(index + 9, index + 13);
           bestMoveFound = true;
-          // if (end === "e7e5"){
-          //   console.log(result)
+          // if (end === "e1g1"){
+          //   console.log("possible:", end.substring(0, 2))
+          //   console.log("possible:", chess.moves({ square: end.substring(0, 2)}))
+          //   console.log("secondhalf", end.substring(2))
+    
           // }
           // console.log(chess.ascii())
-          // console.log(chess.turn())
-          // console.log("possible:", end.substring(0, 2))
-          // console.log("possible:", chess.moves({ square: end.substring(0, 2)}))
-          // console.log("secondhalf", end.substring(2))
           const startSquare = end.substring(0, 2); 
           const targetSquare = end.substring(2);  
           
        
           const moves = chess.moves({ square: startSquare });
+          //console.log(moves)
           
-          
-          const validMove = moves.some(move => move.slice(-2) === targetSquare);
+          let validMove = "";
+          if (moves.includes("O-O") || moves.includes("O-O-O")){
+            validMove = "castling"
+          } else {
+            validMove = moves.some(move => move.slice(-2) === targetSquare);
+          }
           if (
             validMove
           ) {
             try {
+              //console.log("trying castling: ", moves)
               chess.move(end, { sloppy: true });
-              console.log(end)
+              console.log(chess.history())
+              // console.log(end)
               resolve();
             } catch (error) {
               reject("Move not accepted 1 ");
@@ -92,7 +98,6 @@ app.post("/uci", async (req, res) => {
     });
   }
   try {
-    //console.log("byer")
     if (command === "End") {
       //console.log("here")
       stockfish.stdin.write("stop\n");
@@ -100,31 +105,43 @@ app.post("/uci", async (req, res) => {
       stockfish.stdout.removeAllListeners("data");
       return res.send({ response: "Connection terminated" });
     } 
+
     if (command === "New") {
       stockfish.stdin.write("ucinewgame\n");
       stockfish.stdin.write("isready\n");
       chess.reset();
       return res.send({ response: "Stockfish reset." });
     } 
+
+
+    // if(command === 'd7d6'){
+    //     console.log(chess.history())
+    //     console.log(command)
+    //     console.log(chess.ascii())
+    //     console.log(command.substring(0, 2))
+    //     console.log(chess.moves({square: command.substring(0, 2)}))
+    //     console.log(command.substring(2))
+    //   }
+      const inputMove = command.substring(2)
+      const possibleMoves = chess.moves({square: command.substring(0, 2)})
+      const matchingMoves = possibleMoves.filter(move => move.includes(inputMove));
     if (command === "First") {
       stockfish.stdin.write("position startpos\n");
       stockfish.stdin.write("go depth 5\n");
-    }
-    // console.log(command[0].substring(0, 2))
-    // console.log(moves)
-    // console.log(command)
-    // console.log(chess.moves({square: command.substring(0, 2)}))
-    // console.log(command.substring(2))
-    // console.log(chess.ascii())
-    // console.log(chess.history({verbose:true}))
-    // console.log(chess.turn())
-    // console.log(chess.get(command[0].substring(0, 2)))
-    if (
-      chess
-      .moves({ square: command.substring(0, 2) })
-      .includes(command.substring(2))
+      //console.log("this is hit ")
+    } else if (
+      matchingMoves
     ) {
+      // console.log(command[0].substring(0, 2))
+      // console.log(command)
+      // console.log(chess.ascii())
+      // console.log(chess.history({verbose:true}))
+      //console.log(chess.turn())
+      // console.log(chess.get(command[0].substring(0, 2)))
+   
       try {
+        //console.log("this is fen: " + chess.fen())
+        // console.log(command)
         chess.move(command, { sloppy: true });
         //console.log("outer")
         stockfish.stdin.write(`position fen ${chess.fen()}\n`);
@@ -133,11 +150,13 @@ app.post("/uci", async (req, res) => {
         return res.status(400).send({ response: "Invalid move" });
       }
     } else {
-      return res.status(400).send({ response: "Unavaliable Move" });
+      return res.status(400).send({ response: "Invalid move 1 " });
     }
+    //console.log(chess.history())
     await waitForStockfishResponse();
     //console.log("closer")
     const lastmove = chess.history({ verbose: true })[chess.history().length-1]
+    //console.log(lastmove)
     return res.send({ response: `${lastmove.from}${lastmove.to}`});
   } catch (err) {
     console.error(err);

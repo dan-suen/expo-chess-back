@@ -9,13 +9,12 @@ async def send_command(command):
             result = await response.json()  
             print(command)
             print(result)
-            return 
+            return
 async def main():
     await send_command("New")
-    await send_command("First")
-    await send_command("e7e5")
-    await send_command("b8c6")
-    await send_command("d7d6")
+    await send_command("e2e4")
+    await send_command("g1f3")
+    await send_command("f1c4")
     await send_command("End")
 
 asyncio.run(main())
