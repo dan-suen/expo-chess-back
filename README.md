@@ -16,4 +16,12 @@
 #### generator.py can be run using `python3 generator.py`. The purpose of this file is to test the server response by mimicking 2 players represented by simpleTest.py and simpleTest2.py. Start by removing ` await send_command()` function calls until each file has one ` await send_command("New")` and one `await send_command("End")` call and simpleTest.py has an additonal `send_command("First")` immediately following the "New" function call. Then simply run generator.py to have each file repeated make requests to the server to ask for the best move for the opposing player. The best moves are appended to each file beforing the process repeats, thus simulating a match between Stockfish and itself.
 
 
+## Acknowledgments
 
+This project uses [Stockfish](https://stockfishchess.org/) distributed under the [GNU General Public License v3 (GPL v3)](https://www.gnu.org/licenses/gpl-3.0.txt).
+
+### License Compliance
+
+Stockfish is open-source software, and as per the GPL v3 license, the full source code of Stockfish can be found [here](https://github.com/official-stockfish/Stockfish). If this project distributes a modified version of Stockfish, the modified source code will be made available in accordance with GPL v3.
+
+For more details on GPL v3, refer to the official [GPL v3 License](https://www.gnu.org/licenses/gpl-3.0.txt).
