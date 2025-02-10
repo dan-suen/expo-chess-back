@@ -1,4 +1,4 @@
-### This backend server was built using a NodeJs and tested with Python. It hosts an instance of Stockfish that can be interacted with via POST requests.
+### This backend server was built using a NodeJs and tested with Python. It hosts an instance of Stockfish that can be interacted with via POST requests. Built to be used with the project located at <https://github.com/dan-suen/expo-chess-test>
 
 ### Access my server at https://expo-chess-back.onrender.com/uci or host your own using `npm run start`
 
