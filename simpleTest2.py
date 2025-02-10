@@ -4,7 +4,6 @@ import asyncio
 # STOCKFISH_SERVER_URL = "https://expo-chess-back.onrender.com/uci"
 STOCKFISH_SERVER_URL = "http://localhost:5000/uci"
 file_path = 'simpleTest.py'
-croppedcontent = f'\tawait send_command("f2f4")\n'
 async def send_command(command, append = False):
     async with aiohttp.ClientSession() as session:
         async with session.post(STOCKFISH_SERVER_URL, json={"command": command}) as response:
@@ -17,10 +16,11 @@ async def send_command(command, append = False):
 def append_to_second_last_line(file_path, command, append = False):
     if append:
         with open(file_path, 'r') as file:
+            croppedcontent = f'\tawait send_command("f2f4")\n'
             lines = file.readlines()
             lines[-3] = croppedcontent
-            lines.insert(-2, f"\tawait send_command({command}, append = True)\n")
-            croppedcontent = f'\tawait send_command({command})\n'
+            lines.insert(-2, f'\tawait send_command("{command}", append = True)\n')
+            lines[19] = f"\t\t\tcroppedcontent = f'\\tawait send_command(\"{command}\")\\n'"
             with open(file_path, 'w') as file:
                 file.writelines(lines)
 async def main():
