@@ -12,15 +12,22 @@ async def send_command(command, append = False):
                 return print("No more moves!")
             else:    
                 append_to_second_last_line(file_path, result["response"], append)
+            print(command)
+            print(result)
             return
 def append_to_second_last_line(file_path, command, append = False):
+    # return
     if append:
         with open(file_path, 'r') as file:
-            croppedcontent = f'\tawait send_command("f2f4")\n'
+            #croppedcontent = f'    await send_command("d7e5")\n' #initial
+            croppedcontent = f'    await send_command("d7e5")\n'
             lines = file.readlines()
+            prev = croppedcontent[24:-3]
+            print(prev)
+            print(command)
             lines[-3] = croppedcontent
-            lines.insert(-2, f'\tawait send_command("{command}", append = True)\n')
-            lines[19] = f"\t\t\tcroppedcontent = f'\\tawait send_command(\"{command}\")\\n'"
+            lines.insert(-2, f'    await send_command("{command}", append = True)\n')
+            lines[23] = f"            croppedcontent = f'    await send_command(\"{command}\")\\n'\n"
             with open(file_path, 'w') as file:
                 file.writelines(lines)
 async def main():

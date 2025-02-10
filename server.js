@@ -124,6 +124,7 @@ app.post("/uci", async (req, res) => {
     if (command === "End") {
       //console.log("here")
       stockfish.stdin.write("stop\n");
+      console.log(chess.history())
       chess.reset();
       stockfish.stdout.removeAllListeners("data");
       return res.send({ response: "Connection terminated" });
