@@ -40,6 +40,7 @@ app.post("/uci", async (req, res) => {
   if (chess.isGameOver()){
     stockfish.stdin.write("stop\n");
     stockfish.stdout.removeAllListeners("data");
+    chess.reset();
     return res.send({ response: "Game Already Over"});
   }
   // if(command === "f2f4"){
