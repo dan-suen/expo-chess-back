@@ -37,9 +37,9 @@ if (!stockfish) {
 let counter = 0;
 app.post("/uci", async (req, res) => {
   const { command } = req.body;
-  if(command === "f2f4"){
-    console.log(chess.ascii())
-  }
+  // if(command === "f2f4"){
+  //   console.log(chess.ascii())
+  // }
   stockfish.stdin.write("uci\n");
   stockfish.stdin.write("isready\n");
   function waitForStockfishResponse() {
