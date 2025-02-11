@@ -88,6 +88,7 @@ async def main():
     await send_command("d8f6")
     await send_command("f6d8")
     await send_command("d8f6")
-    await send_command("f6d8", append = True)
+    await send_command("f6d8")
+    await send_command("d8f6", append = True)
     await send_command("End") #Do not remove
 asyncio.run(main())

@@ -66,7 +66,7 @@ app.post("/uci", async (req, res) => {
 
         if (!bestMoveFound && result.includes("bestmove")) {
           let index = result.indexOf("bestmove");
-          let end = result.slice(index + 9, index + 13);
+          let end = result.slice(index + 9, index + 14);
           bestMoveFound = true;
           // console.log(end)
           // if (end === "d4e2"){
@@ -77,7 +77,8 @@ app.post("/uci", async (req, res) => {
           // }
           // console.log(chess.ascii())
           const startSquare = end.substring(0, 2); 
-          const targetSquare = end.substring(2);  
+          const targetSquare = end.substring(2, 4);
+          const promotionR = "nbqr".includes(end[4]) ? end[4] :  "";
           
        
           const moves = chess.moves({ square: startSquare });
@@ -95,7 +96,7 @@ app.post("/uci", async (req, res) => {
           ) {
             try {
               //console.log("trying castling: ", moves)
-              chess.move(end, { sloppy: true });
+              chess.move({ from: startSquare, to: targetSquare, promotion: promotionR})
               //console.log(chess.history())
               // console.log(end)
               stockfish.stdout.removeListener("data", dataListener);
@@ -139,7 +140,7 @@ app.post("/uci", async (req, res) => {
     //     console.log(chess.moves({square: command.substring(0, 2)}))
     //     console.log(command.substring(2))
     //   }
-      const inputMove = command.substring(2)
+      const inputMove = command.substring(2,4)
       const possibleMoves = chess.moves({square: command.substring(0, 2)})
       const matchingMoves = possibleMoves.filter(move => move.includes(inputMove));
     if (command === "First") {
@@ -159,8 +160,11 @@ app.post("/uci", async (req, res) => {
       try {
         //console.log("this is fen: " + chess.fen())
         // console.log(command)
+        let from =  command.substring(0,2);
+        let to = command.substring(2,4);
+        let promotion = "nbqr".includes(command[4]) ? command[4] :  "";
         if(command.length === 5){
-          chess.move({ from: command.substring(0,2), to: command.substring(2,4), promotion: command[4] })
+          chess.move({ from: from, to: to, promotion: promotion })
         } else {
           chess.move(command, { sloppy: true });
         }
@@ -177,8 +181,11 @@ app.post("/uci", async (req, res) => {
     await waitForStockfishResponse();
     //console.log("closer")
     const lastmove = chess.history({ verbose: true })[chess.history().length-1]
-    //console.log(lastmove)
-    return res.send({ response: `${lastmove.from}${lastmove.to}`});
+    if (lastmove.promotion){
+      console.log("promotion happened")
+    }
+    
+    return res.send({ response: `${lastmove.from}${lastmove.to}${lastmove.promotion?lastmove.promotion:""}`});
   } catch (err) {
     console.error(err);
     return res.status(500).send({ response: "An error occurred" });
